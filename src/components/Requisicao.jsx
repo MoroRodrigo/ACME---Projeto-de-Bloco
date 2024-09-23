@@ -1,79 +1,60 @@
+// src/Requisicao.jsx
 import React, { useState, useEffect } from 'react';
-import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, orderBy, getDoc } from 'firebase/firestore'; // Certifique-se de que 'deleteDoc' está importado
+import { collection, getDocs, query, where, orderBy, doc, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../firebase';
-import { CSVLink } from 'react-csv';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import CreateRequest from './CreateRequest';
+import RequestList from './RequestList';
+import ExportCSV from './ExportCSV';
+import CheckAdminStatus from './CheckAdminStatus';
 
 const Requisicao = () => {
-  const [descricao, setDescricao] = useState('');
   const [requisicoes, setRequisicoes] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [user, loading] = useAuthState(auth);
+  const [editRequest, setEditRequest] = useState(null);
+  const [sortOrder, setSortOrder] = useState('asc');
 
-  // Verifica se o usuário é administrador
-  const checkAdminStatus = async () => {
-    if (user) {
-      const userDocRef = doc(db, 'users', user.uid);
-      const userDoc = await getDoc(userDocRef);
-      if (userDoc.exists() && userDoc.data().role === 'admin') {
-        setIsAdmin(true);
-      } else {
-        setIsAdmin(false);
-      }
-    }
-  };
-
-  // Função para adicionar uma nova requisição
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      await addDoc(collection(db, 'requisicoes'), {
-        descricao,
-        estado: 'aberta', // Estado inicial da requisição
-        userId: user.uid,
-        dataCriacao: new Date()
-      });
-
-      setDescricao('');
-      fetchRequisicoes();
-    } catch (error) {
-      console.error('Erro ao adicionar requisição:', error);
-    }
-  };
-
-  // Função para buscar todas as requisições
   const fetchRequisicoes = async () => {
-    const q = query(collection(db, 'requisicoes'), orderBy('dataCriacao', 'asc'));
+    if (!user) return; // Garante que o usuário está logado antes de buscar as requisições
+    // Consulta para buscar apenas as requisições do usuário logado
+    const q = query(
+      collection(db, 'requisicoes'),
+      where('userId', '==', user.uid), // Filtra as requisições pelo uid do usuário logado
+      orderBy('dataCriacao', sortOrder)
+    );
+
     const querySnapshot = await getDocs(q);
-    const requisicoesList = querySnapshot.docs.map(doc => ({
+    const requisicoesList = querySnapshot.docs.map((doc) => ({
       id: doc.id,
-      ...doc.data()
+      ...doc.data(),
     }));
     setRequisicoes(requisicoesList);
   };
 
-  // Função para alterar o estado de uma requisição
   const changeState = async (id, newState) => {
     const requisicaoRef = doc(db, 'requisicoes', id);
     await updateDoc(requisicaoRef, { estado: newState });
     fetchRequisicoes();
   };
 
-  // Função para excluir uma requisição
-  const deleteRequisicao = async (id) => {
-    const requisicaoRef = doc(db, 'requisicoes', id);
-    await deleteDoc(requisicaoRef); // Correção aqui: deleteDoc foi adicionado
-    fetchRequisicoes();
+  const handleEdit = (req) => {
+    setEditRequest(req);
   };
 
-  // Verifica status de administrador e busca requisições ao carregar o componente
+  const clearEdit = () => {
+    setEditRequest(null);
+  };
+
+  const toggleSortOrder = () => {
+    setSortOrder((prevOrder) => (prevOrder === 'asc' ? 'desc' : 'asc'));
+  };
+
   useEffect(() => {
     if (user && !loading) {
-      checkAdminStatus();
       fetchRequisicoes();
     }
-  }, [user, loading]);
+  }, [user, loading, sortOrder]);
 
   if (loading) {
     return <div>Carregando...</div>;
@@ -82,36 +63,20 @@ const Requisicao = () => {
   return (
     <div>
       <h2>Requisitar Compras</h2>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          value={descricao}
-          onChange={(e) => setDescricao(e.target.value)}
-          required
-        />
-        <button type="submit">Enviar Requisição</button>
-      </form>
-
+      <CheckAdminStatus user={user} setIsAdmin={setIsAdmin} />
+      <CreateRequest user={user} editRequest={editRequest} fetchRequisicoes={fetchRequisicoes} clearEdit={clearEdit} />
       <h2>Minhas Requisições</h2>
-      <ul>
-        {requisicoes.map((req) => (
-          <li key={req.id}>
-            <p>{req.descricao}</p>
-            <p>{req.estado}</p>
-            {isAdmin && req.estado === 'aberta' && (
-              <button onClick={() => changeState(req.id, 'em cotacao')}>Em Cotação</button>
-            )}
-            {isAdmin && req.estado === 'em cotacao' && (
-              <button onClick={() => changeState(req.id, 'cotada')}>Cotada</button>
-            )}
-            <button onClick={() => deleteRequisicao(req.id)}>Excluir</button>
-          </li>
-        ))}
-      </ul>
-
-      <CSVLink data={requisicoes} filename="cotacoes.csv">
-        Exportar Cotações em CSV
-      </CSVLink>
+      <button onClick={toggleSortOrder}>
+        Ordenar por data: {sortOrder === 'asc' ? 'Mais antigas primeiro' : 'Mais novas primeiro'}
+      </button>
+      <RequestList
+        requisicoes={requisicoes}
+        isAdmin={isAdmin}
+        changeState={changeState}
+        handleEdit={handleEdit}
+        fetchRequisicoes={fetchRequisicoes}
+      />
+      <ExportCSV requisicoes={requisicoes} />
     </div>
   );
 };

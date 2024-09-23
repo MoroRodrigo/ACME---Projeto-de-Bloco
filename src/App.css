@@ -40,7 +40,7 @@ nav ul li {
   margin: 0 15px;
   padding: 0px;
   border: 0px;
-  background-color: #555;
+  background-color: #333;
   align-items: center;
 }
 
@@ -50,13 +50,17 @@ nav ul li a {
   text-align: center;
   text-decoration: none;
   justify-content: center;
-  font-size: 18px;
-  padding: 8px 16px;
+  font-size: 16px;
+  padding: 6px 12px;
   border-radius: 4px;
-  background-color: #555;
+  background-color: #333;
   width: 100%;
   transition: background-color 0.3s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
 
 /* Estilo para links ativos */
 nav ul li a.active {
@@ -65,13 +69,13 @@ nav ul li a.active {
 
 /* Estilo para links ao passar o mouse */
 nav ul li a:hover {
-  background-color: #444;
+  background-color: #555;
 }
 
 /* Remover a margem branca ao redor dos botões */
 nav ul li a {
   display: inline-block;
-  box-shadow: none; /* Remove qualquer sombra de caixa */
+  box-shadow: none;
 }
 
 /* Ajustes de responsividade */
@@ -82,6 +86,8 @@ nav ul li a {
 
   nav ul li {
     margin: 10px 0;
+    width: 100%;
+    text-align: center;
   }
 }
 
@@ -116,6 +122,10 @@ nav ul li a {
 button {
   background-color: #333;
   color: #fff;
+  margin-right: 0.5rem;
+  margin-left: 0.5rem;
+  margin-bottom: 0.5rem;
+  margin-top: 0.5rem;
   border: none;
   padding: 0.75rem 1.5rem;
   border-radius: 4px;
@@ -153,3 +163,17 @@ li p {
     margin: 0.5rem 0;
   }
 }
+
+/* src/components/RequestList.css */
+.request-item {
+  margin-right: 0.5rem; /* Espaçamento entre os parágrafos */
+}
+
+.button-group {
+  margin-right: 1rem; /* Espaçamento acima dos botões */
+}
+
+.action-button {
+  margin-right: 0.5rem; /* Espaçamento entre os botões */
+}
+

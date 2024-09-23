@@ -33,7 +33,7 @@ const Login = () => {
           auth.signOut();
         } else {
           // Se o usuário não estiver bloqueado, redireciona para a página desejada
-          navigate('/fornecedor');
+          navigate('/requisicao');
         }
       } else {
         setError('Usuário não encontrado no sistema.');

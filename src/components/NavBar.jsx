@@ -11,16 +11,11 @@ const NavBar = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
 
-  // Função para verificar se o usuário é administrador
   const checkAdminStatus = async () => {
     if (user) {
       try {
-        const userDoc = await getDoc(doc(db, 'users', user.uid)); // Mudança no caminho da coleção
-        if (userDoc.exists() && userDoc.data().role === 'admin') {
-          setIsAdmin(true);
-        } else {
-          setIsAdmin(false);
-        }
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        setIsAdmin(userDoc.exists() && userDoc.data().role === 'admin');
       } catch (error) {
         console.error('Erro ao verificar o papel do usuário:', error);
       }
@@ -42,18 +37,18 @@ const NavBar = () => {
 
   return (
     <nav>
-      <ul>
+      <ul style={{ display: 'flex', alignItems: 'center', listStyleType: 'none' }}>
         {/* Links de navegação */}
-        <li><NavLink to="/fornecedor">Fornecedor</NavLink></li>
-        <li><NavLink to="/contato">Contato</NavLink></li>
-        <li><NavLink to="/produto">Produto</NavLink></li>
-        <li><NavLink to="/cotacao">Cotação</NavLink></li>
-        <li><NavLink to="/consultacotacoes">Consulta de Cotações</NavLink></li>
         <li><NavLink to="/requisicao">Requisição</NavLink></li>
-        
+        <li><NavLink to="/consultacotacoes">Consulta de Cotações</NavLink></li>
+
         {/* Links visíveis apenas para administradores */}
         {isAdmin && (
           <>
+            <li><NavLink to="/fornecedor">Fornecedor</NavLink></li>
+            <li><NavLink to="/contato">Contato</NavLink></li>
+            <li><NavLink to="/produto">Produto</NavLink></li>
+            <li><NavLink to="/cotacao">Cotação</NavLink></li>
             <li><NavLink to="/criarcontaadm">Criar conta Adm</NavLink></li>
             <li><NavLink to="/contas">Contas</NavLink></li>
           </>
@@ -61,10 +56,10 @@ const NavBar = () => {
 
         {/* Exibe e-mail do usuário e botão de sair, se o usuário estiver autenticado */}
         {user && (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', color: 'blue' }}>
-            <span>{user.email}</span>
-            <button onClick={handleSignOut} style={{ display: 'flex', marginTop: '10px' }}>Sair</button>
-          </div>
+          <li style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
+            <span style={{ marginRight: '10px', color: 'blue' }}>{user.email}</span>
+            <button onClick={handleSignOut} style={{ marginLeft: '10px' }}>Sair</button>
+          </li>
         )}
       </ul>
     </nav>

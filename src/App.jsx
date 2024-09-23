@@ -39,15 +39,15 @@ function App() {
           {/* Rotas Privadas */}
           {user && (
             <>
+              <Route path="/requisicao" element={<Requisicao />} />
               <Route path="/fornecedor" element={<Fornecedor />} />
               <Route path="/contato" element={<Contato />} />
               <Route path="/produto" element={<Produto />} />
               <Route path="/cotacao" element={<Cotacao />} />
               <Route path="/consultacotacoes" element={<ConsultaCotacoes />} />
-              <Route path="/requisicao" element={<Requisicao />} />
               <Route path="/criarcontaadm" element={<CriarContaAdm />} />
               <Route path="/contas" element={<Contas />} />
-              <Route path="*" element={<Navigate to="/fornecedor" />} />
+              <Route path="*" element={<Navigate to="/requisicao" />} />
             </>
           )}
         </Routes>
